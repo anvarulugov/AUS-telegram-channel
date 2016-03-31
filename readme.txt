@@ -3,13 +3,13 @@ Contributors: ulugov
 Donate link: http://anvar.ulugov.uz/donate/
 Tags: telegram, bot, channel, newsletter
 Requires at least: 3.4
-Tested up to: 3.4
-Version:	1.0
+Tested up to: 4.4
+Version:	1.0.2
 Stable tag:	trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Send your posts to your Telegram channel
+Broadcast your posts on your Telegram channel
 
 == Description ==
 
@@ -46,3 +46,7 @@ http://telegram.wiki/tips:channels
 
 = 1.0 =
 * Initial Release
+= 1.0.1 =
+* Text limit option has been added
+= 1.0.2 =
+* Tested on Wordpress 4.4

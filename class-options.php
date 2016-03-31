@@ -31,7 +31,7 @@ class AUS_tb_options {
 			$this->plugin_name = $this->configs['plugin_name'];
 		}
 
-		$this->developer_mode = false;
+		$this->developer_mode = true;
 		add_action( 'admin_menu', array( $this, 'create_menu_page' ) );
 		add_action( 'admin_init', array( $this, 'initialize_plugin_options' ) );
 	}
@@ -98,7 +98,7 @@ class AUS_tb_options {
 
 		add_settings_field(
 			'channelname',
-			'<label for="bot_token">' . __( '@channelusername', 'aus-basic' ) . '</label>',
+			'<label for="channelname">' . __( '@channelusername', 'aus-basic' ) . '</label>',
 			array( $this, 'input'),
 			$this->plugin_slug . '_plugin_options',
 			$this->plugin_slug . '_plugin_settings_section',
@@ -111,7 +111,7 @@ class AUS_tb_options {
 
 		add_settings_field(
 			'start_date',
-			'<label for="bot_token">' . __( 'Start date', 'aus-basic' ) . '</label>',
+			'<label for="start_date">' . __( 'Start date', 'aus-basic' ) . '</label>',
 			array( $this, 'input'),
 			$this->plugin_slug . '_plugin_options',
 			$this->plugin_slug . '_plugin_settings_section',
@@ -123,8 +123,22 @@ class AUS_tb_options {
 		);
 
 		add_settings_field(
+			'categories',
+			'<label for="categories">' . __( 'Categories', 'aus-basic' ) . '</label>',
+			array( $this, 'input'),
+			$this->plugin_slug . '_plugin_options',
+			$this->plugin_slug . '_plugin_settings_section',
+			array(
+				'id' => 'categories',
+				'type' => 'categories',
+				'atts' => array( 'multiple' => true ),
+				'description' => __( 'Select categories. If none is selected all categories will be used', 'aus-basic' ),
+			)
+		);
+
+		add_settings_field(
 			'recurrence',
-			'<label for="bot_token">' . __( 'Recurrence', 'aus-basic' ) . '</label>',
+			'<label for="recurrence">' . __( 'Recurrence', 'aus-basic' ) . '</label>',
 			array( $this, 'input'),
 			$this->plugin_slug . '_plugin_options',
 			$this->plugin_slug . '_plugin_settings_section',
@@ -137,6 +151,47 @@ class AUS_tb_options {
 					'daily' 	 => 'Once Daily', 
 				),
 				'description' => __( 'Select recurrence duration', 'aus-basic' ),
+			)
+		);
+
+		add_settings_field(
+			'text_limit',
+			'<label for="text_limit">' . __( 'Text limit', 'aus-basic' ) . '</label>',
+			array( $this, 'input'),
+			$this->plugin_slug . '_plugin_options',
+			$this->plugin_slug . '_plugin_settings_section',
+			array(
+				'id' => 'text_limit',
+				'type' => 'number',
+				'description' => __( 'Here you change the default (100 words) text limit.', 'aus-basic' ),
+			)
+		);
+
+		add_settings_field(
+			'before_text',
+			'<label for="before_text">' . __( 'Before text', 'aus-basic' ) . '</label>',
+			array( $this, 'input'),
+			$this->plugin_slug . '_plugin_options',
+			$this->plugin_slug . '_plugin_settings_section',
+			array(
+				'id' => 'before_text',
+				'type' => 'textarea',
+				'description' => __( 'Custom text before message.', 'aus-basic' ),
+				'editor' => array( 'visual' => false ),
+			)
+		);
+
+		add_settings_field(
+			'after_text',
+			'<label for="after_text">' . __( 'After text', 'aus-basic' ) . '</label>',
+			array( $this, 'input'),
+			$this->plugin_slug . '_plugin_options',
+			$this->plugin_slug . '_plugin_settings_section',
+			array(
+				'id' => 'after_text',
+				'type' => 'textarea',
+				'description' => __( 'Custom text after message.', 'aus-basic' ),
+				'editor' => array( 'visual' => false ),
 			)
 		);
 
@@ -284,7 +339,7 @@ class AUS_tb_options {
 				$input .= '<option value="0">&ndash; ' . __( 'Select', 'aus-basic' ) . ' &ndash;</option>';
 				foreach ( get_categories( array( 'hide_empty' => false ) ) as $cat ) {
 					if ( $multiple ) {
-						$selected = ( in_array( $cat->cat_ID, $value ) ? 'selected="selected"' : '' );
+						$selected = ( in_array( $cat->cat_ID, (array)$value ) ? 'selected="selected"' : '' );
 					} else {
 						$selected = ( $value == $cat->cat_ID ? 'selected="selected"' : '' );
 					}

@@ -3,7 +3,7 @@
 Plugin Name:  AUS Telegram Bot Notifier
 Plugin URI:   http://wp.ulugov.uz
 Description:  Sends Wordpress Posts to Telegram channel via Telegram Bot
-Version:      1.0
+Version:      1.0.3
 Author:       Anvar Ulugov
 Author URI:   http://anvar.ulugov.uz
 License:      GPLv2 or later
@@ -57,9 +57,12 @@ class AUS_Telegram_Bot {
 	public function telegram_send() {
 
 		$post = $this->get_post();
-
 		if ( $post ) {
-			$message = @file_get_contents( "https://api.telegram.org/bot" . $this->options['bot_token'] . "/sendMessage?chat_id=" . $this->options['channelname'] . "&parse_mode=Markdown&disable_web_page_preview=false&text=" . urlencode( "[" . $post['title'] . "](" . $post['url'] . ")\n*" . $post['category'] . "* | _" . $post['date'] . "_\n" . $post['text'] ) );
+			$ch = curl_init(); 
+			curl_setopt( $ch, CURLOPT_URL, "https://api.telegram.org/bot" . $this->options['bot_token'] . "/sendMessage?chat_id=" . $this->options['channelname'] . "&parse_mode=Markdown&disable_web_page_preview=false&text=" . urlencode( $this->options['before_text'] . "\n" . "[" . $post['title'] . "](" . $post['url'] . ")\n*" . $post['category'] . "* | _" . $post['date'] . "_\n" . $post['text'] . "\n" . $this->options['after_text'] ) ); 
+			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 ); 
+			$output = curl_exec( $ch ); 
+			curl_close( $ch ); 
 			update_post_meta( $post['id'], 'aus_telegram_sent', 1 );
 			update_option( 'aus_telegram_bot_last_send', date( 'Y-m-d H:i:s' ) );
 		}
@@ -67,13 +70,20 @@ class AUS_Telegram_Bot {
 	}
 
 	private function get_post() {
+		if ( isset( $this->options['text_limit'] ) && ! empty( $this->options['text_limit'] ) ) {
+			$limit = $this->options['text_limit'];
+		} else {
+			$limit = 100;
+		}
 		$start_date = date( 'F jS, Y', strtotime( $this->options['start_date'] ) );
-		$getPost = query_posts( array(
+		$getPost = new WP_Query( array(
+			'cat' => implode( ',', $this->options['categories'] ),
 			'date_query' => array(
 				array(
 					'after'	=> $start_date,
 				),
 			),
+			'orderby' => 'date',
 			'order' => 'ASC',
 			'meta_query' => array(
 			   'relation' => 'OR',
@@ -85,15 +95,15 @@ class AUS_Telegram_Bot {
 			),
 			'posts_per_page' => 1
 		) );
-		if ( ! empty( $getPost ) ) {
-			$getPost = $getPost[0];
+		if ( isset( $getPost->posts[0] ) ) {
+			$getPost = $getPost->posts[0];
 			$text = $getPost->post_content;
 			$text = strip_shortcodes($text);
 			$text = preg_replace('/[\r\n]+/', "", $text);
 			$text = preg_replace('/\s+/', ' ', $text);
 			$text = trim( $text );
 			$text = strip_tags($text);
-			$text = $this->limit( $text );
+			$text = $this->limit( $text, $limit );
 			$cat_ids = wp_get_post_categories( $getPost->ID );
 			if ( ! empty( $cat_ids ) ) {
 				$category = get_category( $cat_ids[0] )->name;
